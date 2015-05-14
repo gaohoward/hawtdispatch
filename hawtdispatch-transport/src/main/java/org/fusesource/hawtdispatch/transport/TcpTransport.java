@@ -442,6 +442,7 @@ public class TcpTransport extends ServiceBase implements Transport {
     }
 
     public void _start(Task onCompleted) {
+        System.out.println("...real starting..." + socketState);
         try {
             if (socketState.is(CONNECTING.class)) {
 
@@ -471,10 +472,13 @@ public class TcpTransport extends ServiceBase implements Transport {
                                             channel.socket().bind(localAddress);
                                         }
                                         trace("connecting...");
+                                        System.out.println("ok connecting to ssremote: " + remoteAddress);
                                         channel.connect(remoteAddress);
+                                        System.out.println("just connected!! go on creating source.");
 
                                         // this allows the connect to complete..
                                         readSource = Dispatch.createSource(channel, SelectionKey.OP_CONNECT, dispatchQueue);
+                                        System.out.println("--source created. " + readSource.getClass().getName());
                                         readSource.setEventHandler(new Task() {
                                             public void run() {
                                                 if (getServiceState() != STARTED) {
@@ -482,19 +486,24 @@ public class TcpTransport extends ServiceBase implements Transport {
                                                 }
                                                 try {
                                                     trace("connected.");
+                                                    System.out.println("-----connected!!!");
                                                     channel.finishConnect();
                                                     readSource.setCancelHandler(null);
                                                     readSource.cancel();
                                                     readSource = null;
                                                     socketState = new CONNECTED();
                                                     onConnected();
+                                                    System.out.println("-----connected() called!!");
                                                 } catch (IOException e) {
                                                     onTransportFailure(e);
                                                 }
                                             }
                                         });
+                                        System.out.println("handler set");
                                         readSource.setCancelHandler(CANCEL_HANDLER);
+                                        System.out.println("cancel set");
                                         readSource.resume();
+                                        System.out.println("source resumed");
 
                                     } catch (Exception e) {
                                         try {

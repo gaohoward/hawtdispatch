@@ -40,6 +40,8 @@ final public class GlobalDispatchQueue implements HawtDispatchQueue {
         this.priority = priority;
         this.label=priority.toString();
         this.workers = new SimplePool(this, threads, priority);
+        System.out.println("info, a SimplePool created. threads: " + threads);
+        Thread.dumpStack();
         dispatcher.track(this);
     }
 

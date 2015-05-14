@@ -132,6 +132,7 @@ final public class NioDispatchSource extends AbstractDispatchObject implements D
 
     @Override
     protected void onStartup() {
+        System.out.println("in Startup(), handler: " + eventHandler);
         if( eventHandler==null ) {
             throw new IllegalArgumentException("eventHandler must be set");
         }
@@ -175,6 +176,7 @@ final public class NioDispatchSource extends AbstractDispatchObject implements D
     }
 
     private void register_on(final DispatchQueue queue) {
+        System.out.println("in register_on()");
         queue.execute(new Task(){
             public void run() {
                 assert keyState.get()==null;
@@ -182,6 +184,7 @@ final public class NioDispatchSource extends AbstractDispatchObject implements D
                 try {
                     NioAttachment attachment = getCurrentNioManager().register(channel, interestOps);
                     attachment.sources.add(NioDispatchSource.this);
+                    System.out.println("====== ok added source to attachment. handler: " + eventHandler);
                     keyState.set(new KeyState(attachment));
 
                 } catch (ClosedChannelException e) {

@@ -43,6 +43,8 @@ abstract public class WorkerThread extends Thread {
     public static WorkerThread currentWorkerThread() {
         Thread thread = Thread.currentThread();
         if( thread instanceof WorkerThread) {
+            System.out.println(">>>> workthread is me " + thread.getName());
+            System.out.println(">>> its niomgr: " + ((WorkerThread)thread).getNioManager());
             return (WorkerThread)thread;
         }
         return null;

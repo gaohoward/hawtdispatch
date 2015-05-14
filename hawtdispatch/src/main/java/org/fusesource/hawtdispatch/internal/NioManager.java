@@ -17,6 +17,8 @@
 
 package org.fusesource.hawtdispatch.internal;
 
+import org.fusesource.hawtdispatch.internal.util.DebugLogger;
+
 import java.io.IOException;
 import java.nio.channels.*;
 import java.util.ArrayList;
@@ -33,6 +35,7 @@ import static java.lang.String.*;
  */
 public class NioManager {
 
+    private static final DebugLogger logger = DebugLogger.getLogger("fuse.log");
     /**
      * Set the "hawtdispatch.workaround-select-spin" System property to "true" if your
      * seeing the 100% CPU usage in the Selector.select() call.  This enables a
@@ -172,6 +175,7 @@ public class NioManager {
      * @throws IOException
      */
     public int select(long timeout) throws IOException {
+        logger.log("NioManager.slelct " + timeout);
         try {
             if (timeout == 0) {
                 selector.selectNow();
@@ -179,8 +183,10 @@ public class NioManager {
                 selecting=true;
                 try {
                     if( selectCounter == wakeupCounter.get()) {
+                        logger.log("using selectstragety: " + selectStrategy);
                         selectStrategy.select(timeout);
                     } else {
+                        logger.log("Using selector directly");
                         selector.selectNow();
                     }
                 } finally {
@@ -194,13 +200,15 @@ public class NioManager {
     }
 
     private int processSelected() {
-        
+        logger.log("processing selected");
         if( selector.keys().isEmpty() ) {
+            logger.log("key is empty!!!!!!");
             return 0;
         }
 
         Set<SelectionKey> selectedKeys = selector.selectedKeys();
         int size = selectedKeys.size();
+        logger.log("size of keys: " + size);
         if (size!=0) {
             trace("selected: %d",size);
 
@@ -250,15 +258,23 @@ public class NioManager {
 
     public NioAttachment register(SelectableChannel channel, int interestOps) throws ClosedChannelException {
 
+        logger.log("registering channel " + channel + " ops: " + interestOps);
+
         SelectionKey key = channel.keyFor(selector);
+        logger.log("check key for channel: " + key);
+
         if( key==null ) {
             key = channel.register(selector, interestOps);
+            logger.log("registered a new channel, key: " + key);
+
             registeredKeys.incrementAndGet();
             key.attach(new NioAttachment(key));
         }
         try {
+            logger.log("reseting ops, current ops in key: " + key.interestOps() + " inops: " + interestOps);
             // the key could be canceled by now..
             key.interestOps(key.interestOps()|interestOps);
+            logger.log("done.");
             return (NioAttachment)key.attachment();
         } catch (CancelledKeyException e) {
             cancel(key);

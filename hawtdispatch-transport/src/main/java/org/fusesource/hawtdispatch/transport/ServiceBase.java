@@ -84,6 +84,7 @@ public abstract class ServiceBase {
     }
 
     final public void start(final Task onCompleted) {
+        System.out.println("...starting transport with task:noop " + onCompleted);
         getDispatchQueue().execute(new Task() {
             public void run() {
                 if (_serviceState == CREATED ||

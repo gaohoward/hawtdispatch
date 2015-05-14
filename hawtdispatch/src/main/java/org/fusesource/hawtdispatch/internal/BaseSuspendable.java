@@ -38,10 +38,15 @@ public class BaseSuspendable extends Task implements Suspendable {
     }
 
     public void resume() {
+        System.out.println("in resume() " + this);
+        System.out.println("suspended: " + suspended.get());
         if (suspended.decrementAndGet() == 0) {
+            System.out.println("ok, check startup: " + startup.get());
             if (startup.compareAndSet(true, false)) {
+                System.out.println("so it's startup");
                 onStartup();
             } else {
+                System.out.println("so it's a resume");
                 onResume();
             }
         }
